@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>Nirmaan - Intro Scoring</title>
+    <style>
+      body { font-family: Arial, sans-serif; max-width:900px; margin:30px auto; }
+      textarea { width:100%; height:180px; }
+      pre { background:#f4f4f4; padding:10px; }
+      .score { font-size:48px; color: #2b7a78; }
+    </style>
+  </head>
+  <body>
+    <h1>Nirmaan — Intro Scoring Tool (Demo)</h1>
+    <p>Paste transcript below and click Score.</p>
+    <textarea id="transcript"></textarea>
+    <p><button id="btn">Score</button></p>
+    <div id="out"></div>
+    <script>
+      document.getElementById('btn').onclick = async () => {
+        const t = document.getElementById('transcript').value;
+        const res = await fetch('/score', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({transcript: t})
+        }).then(r=>r.json());
+        document.getElementById('out').innerHTML = `
+          <h2>Overall score: <span class="score">${res.overall_score}</span></h2>
+          <p>Words: ${res.words}</p>
+          <h3>Per-criterion</h3>
+          ${res.per_criterion.map(p=>`<div style="border:1px solid #ddd; padding:8px; margin:8px 0;">
+            <strong>${p.criterion}</strong> — ${p.score}/100 (weight ${p.weight})<br/>
+            <em>${p.feedback}</em>
+          </div>`).join('')}
+        `;
+      };
+      fetch('/static/sample.txt').then(r=>r.text()).then(t=>{ document.getElementById('transcript').value = t; });
+    </script>
+  </body>
+</html>
